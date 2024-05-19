@@ -1,17 +1,25 @@
 from arduino_io import ArduinoIO
 import time
 
+import random
 
-COLORS_STRING = "F25A2A, 83D3F2, FFC1E7, 1D4C9C, A0E09E, F7CAC9, 9D38BD, FFF59D, 79CDCD, EFC0E8, 2C99A3, C239B3, FFF7F3, 66B3FF, D7CCC8, 29ABCA, E06666, FDFEFE, 90EE90, D4A0A0, 38B34A, C599FF, FCE4EC, 40C463, CEC2C0, 3E82F7, D8BFD8, F5DEB3, 4CAF50, E0E0E0, A2A27A, 43A047, BA68C8, FFF9C4, 4DD0E1, CDDC39, C71C68, FFFFFF, BDBDBD, 4285F4, 99CCFF, FBE9A7, 45C0C2, C0C0C0, 78909C, 4959E0, E040FB, FFE0B2, 4ECDC4, F5F5F5, 878989, 00CED1, 64B5F6, FCE5C0, 536DFE, D2B48C, A1887F, FAFAFA, 708090, 00BDBD, 428BCA, FCE9E2, 5D73E3, E2957A, 8D6E63, F0F0F0, 696969, 7CFC00, 3F51B5, FDF4C2, 66FF00, F4D0EC, C4A268, 7F8C8D, E0E0E0, 555555, 9E9E9E, 009688, 29B6F6, FCE4EC, 00E676, F8F0E0, 990000, D6D6D6, 00796B, 1A237E, FDF2CA, 00C853, E6E6E6, 607D8B, 388E3C, C5CAE9, FBE5D5, 00FF00, DDDCDC, 263238, 00BCD4, 7B1FA2, FCEFEF, 009EAA"
 
-COLORS = COLORS_STRING.split(", ")
+# Function to generate a random hex color
+def generate_random_hex_color():
+    return "{:06x}".format(random.randint(0, 0xFFFFFF))
 
 
 ard = ArduinoIO("COM3", 115200)
 
-start = time.time()
 
-for _, color in enumerate(COLORS):
-    ard.write(f"{_}:{color}\n")
+while True:
+    # Generate 86 random hex colors
+    COLORS = [generate_random_hex_color() for _ in range(86)]
 
-print("FINISHED AT " + str(time.time() - start))
+    start = time.time()
+
+    for _, color in enumerate(COLORS):
+        ard.write(f"{_}:{color}\n")
+        time.sleep(0.004)
+
+    print("FINISHED AT " + str(time.time() - start))
