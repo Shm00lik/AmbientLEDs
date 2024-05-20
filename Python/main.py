@@ -24,19 +24,31 @@ try:
 
         start = time.time()
 
+        sent = False
+
         for i, color in enumerate(COLORS):
             if i in last_send and last_send.get(i) == color:
                 continue
 
+            sent = True
             last_send[i] = color
 
-            print(f"<{i}:{color}>")
+            print(f"SENDING <{i}:{color}>")
 
             ard.write(f"<{i}:{color}>")
 
-            d = ard.read()
+            # d = ard.read()
 
-            print(d)
+            # print("RECEIVED: " + d)
+
+        if sent:
+            print("SENDING <END>")
+            ard.write("<END>")
+
+        # d = ard.read()
+
+        # print("RECEIVED: " + d)
+
 except KeyboardInterrupt:
     print("Stopped...")
 finally:

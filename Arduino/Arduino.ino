@@ -30,17 +30,22 @@ void loop() {
 
   if (newData == true) {
       strcpy(tempChars, receivedChars);
-      // Serial.println(tempChars);
-      
+
+      if (strcmp(tempChars, "END\0") == 0) {
+        FastLED.show();
+        // Serial.println("GOTTTT <END>");
+
+        newData = false;
+        return;
+      }
+
       struct LEDData currentLEDData = extractLEDData(tempChars);
 
       setLEDColor(currentLEDData.index, currentLEDData.color);
 
       newData = false;
 
-      Serial.println("<" + String(currentLEDData.index) + ":" + String(currentLEDData.color) + ">");
-
-      FastLED.show();
+      // Serial.println("<" + String(currentLEDData.index) + ":" + String(currentLEDData.color) + ">");
   }
 }
 
