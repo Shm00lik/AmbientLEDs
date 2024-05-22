@@ -1,6 +1,6 @@
 from arduino_io import ArduinoIO
 import time
-from colors import get_led_colors
+from colors import capture_screen_and_get_led_colors
 import random
 
 
@@ -20,7 +20,7 @@ last_send = {}
 try:
     while True:
         # Generate 86 random hex colors
-        COLORS = get_led_colors()
+        COLORS = capture_screen_and_get_led_colors()
 
         start = time.time()
 

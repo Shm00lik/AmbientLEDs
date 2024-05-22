@@ -2,51 +2,95 @@ from PIL import ImageGrab
 import numpy as np
 
 SCREEN_WIDTH = 1920  # Replace with your screen's width
-ACTIVE_LEDS = 32
-NUM_LEDS = 86
-FROM_END = True
+SCREEN_HEIGHT = 1200
+
 HEIGHT_LIMIT = 100  # Use only the first 50 pixels from the height
 
+BOTTOM_LEDS = 33
+RIGHT_LEDS = 22
+TOP_LEDS = 32
 
-def get_average_color(pixels):
-    # Compute the average color of the given pixels
-    avg_color = np.mean(pixels, axis=(0, 1))
+
+def get_average_color(image):
+    """Returns the average color of the given image as a tuple (R, G, B)."""
+    np_image = np.array(image)
+    avg_color = np.mean(np_image, axis=(0, 1))
     return tuple(avg_color.astype(int))
 
 
-def get_led_colors(
+def rgb_to_hex(rgb):
+    """Converts an RGB tuple to a HEX string."""
+    return "{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
+
+
+def capture_screen_and_get_led_colors(
+    num_leds_bottom=BOTTOM_LEDS,
+    num_leds_right=RIGHT_LEDS,
+    num_leds_top=TOP_LEDS,
     screen_width=SCREEN_WIDTH,
-    num_leds=NUM_LEDS,
-    active_leds=ACTIVE_LEDS,
-    height_limit=HEIGHT_LIMIT,
-    from_end=FROM_END,
+    screen_height=SCREEN_HEIGHT,
 ):
-    # Capture the screen
-    screen = ImageGrab.grab()
-    screen_np = np.array(screen)
+    """Captures the screen and returns a list of HEX colors for each LED on all four sides."""
+    # Capture the screenshot
+    screenshot = ImageGrab.grab()
+    screenshot = screenshot.resize((screen_width, screen_height))
 
-    # Limit the height to the first 50 pixels
-    screen_np = screen_np[:height_limit, :, :]
+    # Initialize an array to hold the HEX colors for each LED
+    led_colors = []
 
-    # Determine the width of each segment
-    segment_width = screen_width // active_leds
+    # Define the width of the strips to average (50 pixels)
+    strip_width = HEIGHT_LIMIT
 
-    led_colors = ["000000"] * num_leds
+    # Bottom strip (left to right)
+    segment_width = screen_width // num_leds_bottom
+    for i in range(num_leds_bottom):
+        segment = screenshot.crop(
+            (
+                i * segment_width,
+                screen_height - strip_width,
+                (i + 1) * segment_width,
+                screen_height,
+            )
+        )
+        avg_color = get_average_color(segment)
+        led_colors.append(rgb_to_hex(avg_color))
 
-    for i in range(active_leds):
-        # Calculate the pixel range for this LED
-        start_x = i * segment_width
-        end_x = (i + 1) * segment_width if i < active_leds - 1 else screen_width
+    # Right strip (bottom to top)
+    segment_height = screen_height // num_leds_right
+    for i in range(num_leds_right):
+        segment = screenshot.crop(
+            (
+                screen_width - strip_width,
+                (num_leds_right - 1 - i) * segment_height,
+                screen_width,
+                (num_leds_right - i) * segment_height,
+            )
+        )
+        avg_color = get_average_color(segment)
+        led_colors.append(rgb_to_hex(avg_color))
 
-        # Get the segment of pixels
-        segment_pixels = screen_np[:, start_x:end_x, :]
-
-        # Calculate the average color of this segment
-        avg_color = get_average_color(segment_pixels)
-
-        if from_end:
-            led_colors[-(i + 1)] = "{:02x}{:02x}{:02x}".format(*avg_color)
-        else:
-            led_colors.append("{:02x}{:02x}{:02x}".format(*avg_color))
+    # Top strip (right to left)
+    segment_width = screen_width // num_leds_top
+    for i in range(num_leds_top):
+        segment = screenshot.crop(
+            (
+                screen_width - (i + 1) * segment_width,
+                0,
+                screen_width - i * segment_width,
+                strip_width,
+            )
+        )
+        avg_color = get_average_color(segment)
+        led_colors.append(rgb_to_hex(avg_color))
 
     return led_colors
+
+
+# led_colors = capture_screen_and_get_led_colors(
+#     BOTTOM_LEDS,
+#     RIGHT_LEDS,
+#     TOP_LEDS,
+#     SCREEN_WIDTH,
+#     SCREEN_HEIGHT,
+# )
+# print(led_colors)
